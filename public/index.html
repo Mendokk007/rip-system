@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIP System | Grave Locator</title>
+    <link rel="stylesheet" href="all.css">
+</head>
+<body>
+
+    <!-- LOGIN PAGE -->
+    <section id="loginPage" class="auth-page">
+        <div class="auth-card">
+            <div class="brand-icon">RIP</div>
+            <h1>Welcome Back</h1>
+            <p class="subtitle">Grave Locator and Information System</p>
+
+            <form id="loginForm">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" placeholder="admin@rip.local" required>
+
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+
+                <p id="loginError" class="message error"></p>
+
+                <button type="submit" class="btn btn-orange full-width">Log In</button>
+            </form>
+
+            <p class="switch-page">
+                Don't have an account?
+                <button type="button" id="showRegister" class="text-btn">Register here</button>
+            </p>
+
+            <p class="demo-note">Demo account: admin@rip.local / admin123</p>
+        </div>
+    </section>
+
+    <!-- REGISTRATION PAGE -->
+    <section id="registerPage" class="auth-page hidden">
+        <div class="auth-card">
+            <div class="brand-icon">RIP</div>
+            <h1>Create Account</h1>
+            <p class="subtitle">Register to access the system</p>
+
+            <form id="registerForm">
+                <label for="registerFullName">Full Name</label>
+                <input type="text" id="registerFullName" placeholder="Enter your full name" required>
+
+                <label for="registerEmail">Email</label>
+                <input type="email" id="registerEmail" placeholder="Enter your email" required>
+
+                <label for="registerPassword">Password</label>
+                <input type="password" id="registerPassword" placeholder="At least 6 characters" minlength="6" required>
+
+                <p id="registerMessage" class="message"></p>
+
+                <button type="submit" class="btn btn-orange full-width">Create Account</button>
+            </form>
+
+            <p class="switch-page">
+                Already have an account?
+                <button type="button" id="showLogin" class="text-btn">Log in here</button>
+            </p>
+        </div>
+    </section>
+
+    <!-- DASHBOARD PAGE -->
+    <section id="dashboardPage" class="hidden">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-icon small">RIP</div>
+                <div>
+                    <h2>RIP System</h2>
+                    <p>Grave Locator and Information System</p>
+                </div>
+            </div>
+            <div class="user-controls">
+                <span id="welcomeUser">Welcome!</span>
+                <button id="logoutBtn" class="btn btn-outline">Log Out</button>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <div class="page-heading">
+                <div>
+                    <p class="eyebrow">RECORD MANAGEMENT</p>
+                    <h1>Dashboard</h1>
+                    <p class="subtitle">Search and locate burial records.</p>
+                </div>
+                <div class="today-label" id="todayDate"></div>
+            </div>
+
+            <!-- STATISTICS -->
+            <div class="stats-grid">
+                <article class="stat-card orange-card">
+                    <div class="stat-icon">▤</div>
+                    <p>Total Records</p>
+                    <h2 id="totalRecords">0</h2>
+                </article>
+                <article class="stat-card turquoise-card">
+                    <div class="stat-icon">⌕</div>
+                    <p>Available Search Records</p>
+                    <h2 id="searchableRecords">0</h2>
+                </article>
+                <article class="stat-card green-card">
+                    <div class="stat-icon">⌖</div>
+                    <p>Burial Locations</p>
+                    <h2 id="totalLocations">0</h2>
+                </article>
+            </div>
+
+            <!-- ADMIN CSV UPLOAD (Only visible to admins) -->
+            <div id="adminPanel" class="admin-panel hidden">
+                <div>
+                    <h3>Admin: Bulk Data Upload</h3>
+                    <p>Upload a CSV file (Max 10MB) to add graves. Headers must match: <br><code>full_name, birth_date, death_date, cemetery_name, section, plot_number</code></p>
+                </div>
+                <div>
+                    <input type="file" id="csvFile" accept=".csv" style="margin-bottom: 8px; min-height: auto;">
+                    <button type="button" id="uploadCsvBtn" class="btn btn-outline full-width">Upload CSV</button>
+                </div>
+            </div>
+
+            <!-- SEARCH -->
+            <section class="panel search-panel">
+                <div>
+                    <h2>Find a Deceased Person</h2>
+                    <p class="subtitle">Search using a name, record ID, or burial location.</p>
+                </div>
+                <div class="search-row">
+                    <input type="search" id="searchInput" placeholder="Enter name, ID, or location...">
+                    <button type="button" id="searchBtn" class="btn btn-turquoise">Search</button>
+                    <button type="button" id="clearBtn" class="btn btn-light">Clear</button>
+                </div>
+            </section>
+
+            <!-- RECORDS TABLE -->
+            <section class="panel records-panel">
+                <div class="section-heading">
+                    <div>
+                        <h2>Burial Records</h2>
+                        <p class="subtitle">Select a record to view complete information.</p>
+                    </div>
+                    <span id="resultCount" class="result-badge">0 records</span>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Record ID</th>
+                                <th>Full Name</th>
+                                <th>Date of Birth</th>
+                                <th>Date of Death</th>
+                                <th>Burial Location</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsTable">
+                            <!-- JavaScript displays records here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="emptyState" class="empty-state hidden">
+                    <div class="empty-icon">⌕</div>
+                    <h3>No records found</h3>
+                    <p>Try another name, record ID, or location.</p>
+                </div>
+            </section>
+
+            <footer>RIP System &copy; <span id="currentYear"></span> | Grave Locator and Information System</footer>
+        </main>
+    </section>
+
+    <!-- DETAILS MODAL -->
+    <div id="detailsModal" class="modal hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <p class="eyebrow">DECEASED PERSON INFORMATION</p>
+                    <h2 id="modalName">Record Details</h2>
+                </div>
+                <button type="button" id="closeModal" class="close-btn" aria-label="Close details">&times;</button>
+            </div>
+
+            <div id="printArea" class="details-content">
+                <div class="record-banner">
+                    <span>Record ID</span>
+                    <strong id="detailId"></strong>
+                </div>
+
+                <h3>Personal Information</h3>
+                <div class="details-grid">
+                    <div class="detail-item"><span>Full Name</span><strong id="detailName"></strong></div>
+                    <div class="detail-item"><span>Gender</span><strong id="detailGender"></strong></div>
+                    <div class="detail-item"><span>Date of Birth</span><strong id="detailBirth"></strong></div>
+                    <div class="detail-item"><span>Date of Death</span><strong id="detailDeath"></strong></div>
+                    <div class="detail-item"><span>Age at Death</span><strong id="detailAge"></strong></div>
+                    <div class="detail-item"><span>Last Known Address</span><strong id="detailAddress"></strong></div>
+                </div>
+
+                <h3>Burial Information</h3>
+                <div class="details-grid">
+                    <div class="detail-item"><span>Cemetery</span><strong id="detailCemetery"></strong></div>
+                    <div class="detail-item"><span>Burial Area</span><strong id="detailArea"></strong></div>
+                    <div class="detail-item"><span>Section</span><strong id="detailSection"></strong></div>
+                    <div class="detail-item"><span>Plot Number</span><strong id="detailPlot"></strong></div>
+                    <div class="detail-item"><span>Burial Date</span><strong id="detailBurialDate"></strong></div>
+                    <div class="detail-item"><span>Next of Kin</span><strong id="detailKin"></strong></div>
+                </div>
+
+                <div class="detail-item notes-item">
+                    <span>Additional Notes</span>
+                    <p id="detailNotes"></p>
+                </div>
+            </div>
+
+            <div class="modal-actions no-print">
+                <div class="modal-actions-left">
+                    <button type="button" id="favBtn" class="btn btn-turquoise">★ Favorite</button>
+                    <button type="button" id="reportBtn" class="btn btn-outline">Report Issue</button>
+                </div>
+                <div class="modal-actions-right">
+                    <button type="button" id="printBtn" class="btn btn-green">Print Record</button>
+                    <button type="button" id="closeModalBottom" class="btn btn-light">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="login.js"></script>
+</body>
+</html>

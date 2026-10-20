@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>RIP System — Favorites & Reports Test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 20px; }
+    input, select, textarea, button { padding: 8px; margin: 4px 0; font-size: 14px; }
+    input, select, textarea { width: 100%; box-sizing: border-box; }
+    button { background: #2a5d34; color: white; border: none; cursor: pointer; width: 100%; }
+    button:hover { background: #1f4426; }
+    pre { background: #f2f2f2; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; font-size: 12px; }
+    .ok { color: #2a5d34; font-weight: bold; }
+    .err { color: #b02a2a; font-weight: bold; }
+    h3 { margin-top: 28px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <h2>Favorites & Reports Test</h2>
+  <p><a href="test-search.html">← back to search</a> (log in first)</p>
+
+  <h3>Toggle Favorite</h3>
+  <input id="favCode" value="RIP-001">
+  <button onclick="toggleFav()">POST /api/favorites/toggle.php</button>
+  <pre id="favOut">—</pre>
+
+  <h3>My Favorites</h3>
+  <button onclick="listFavs()">GET /api/favorites/list.php</button>
+  <pre id="listFavOut">—</pre>
+
+  <h3>Submit Report (Limit: 5/day)</h3>
+  <input id="repCode" value="RIP-001">
+  <select id="repType">
+    <option value="wrong_name">Wrong Name</option>
+    <option value="wrong_dates">Wrong Dates</option>
+    <option value="wrong_location">Wrong Location</option>
+    <option value="other">Other</option>
+  </select>
+  <textarea id="repDesc" rows="2" placeholder="Optional description"></textarea>
+  <button onclick="submitReport()">POST /api/reports/create.php</button>
+  <pre id="repOut">—</pre>
+
+  <script>
+    const API = '../api';
+    async function call(path, opts = {}) {
+      const r = await fetch(API + path, { credentials: 'include', ...opts });
+      const data = await r.json().catch(() => ({ ok: false, error: 'bad_json' }));
+      return { status: r.status, data };
+    }
+    function show(id, result) {
+      const el = document.getElementById(id);
+      el.textContent = JSON.stringify(result, null, 2);
+      el.className = result.data?.ok ? 'ok' : 'err';
+    }
+    async function toggleFav() {
+      show('favOut', await call('/favorites/toggle.php', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ grave_code: document.getElementById('favCode').value })
+      }));
+    }
+    async function listFavs() {
+      show('listFavOut', await call('/favorites/list.php'));
+    }
+    async function submitReport() {
+      show('repOut', await call('/reports/create.php', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          grave_code: document.getElementById('repCode').value,
+          issue_type: document.getElementById('repType').value,
+          description: document.getElementById('repDesc').value
+        })
+      }));
+    }
+  </script>
+</body>
+</html>

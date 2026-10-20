@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>RIP System — Search Test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 20px; }
+    input, select, button { padding: 8px; margin: 4px 0; font-size: 14px; }
+    input, select { width: calc(100% - 16px); box-sizing: border-box; }
+    button { background: #2a5d34; color: white; border: none; cursor: pointer; width: 100%; }
+    button:hover { background: #1f4426; }
+    pre { background: #f2f2f2; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; font-size: 12px; }
+    .ok { color: #2a5d34; font-weight: bold; }
+    .err { color: #b02a2a; font-weight: bold; }
+    table { border-collapse: collapse; width: 100%; margin-top: 8px; font-size: 13px; }
+    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+    th { background: #eee; }
+    .row { display: flex; gap: 8px; margin-top: 8px; }
+    .row > * { flex: 1; }
+    h3 { margin-top: 28px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <h2>RIP System — Search / Details / Stats Test</h2>
+  <p><a href="test.html">← back to auth test</a> (log in there first)</p>
+
+  <h3>Dashboard stats</h3>
+  <button onclick="stats()">GET /api/dashboard/stats.php</button>
+  <pre id="statsOut">—</pre>
+
+  <h3>Search</h3>
+  <div class="row">
+    <select id="type">
+      <option value="name">Name</option>
+      <option value="id">Record ID (exact)</option>
+      <option value="location">Location</option>
+    </select>
+    <input id="q" placeholder="e.g. Juan  |  RIP-001  |  Holy Cross" value="Juan">
+  </div>
+  <button onclick="search()">POST /api/graves/search.php</button>
+  <pre id="searchOut">—</pre>
+
+  <h3>Grave details</h3>
+  <div class="row">
+    <input id="code" placeholder="grave_code" value="RIP-001">
+    <button onclick="getGrave()" style="flex: 0 0 200px;">GET /api/graves/get.php</button>
+  </div>
+  <pre id="getOut">—</pre>
+
+  <script>
+    const API = '../api';
+    async function call(path, opts = {}) {
+      const r = await fetch(API + path, { credentials: 'include', ...opts });
+      const data = await r.json().catch(() => ({ ok: false, error: 'bad_json' }));
+      return { status: r.status, data };
+    }
+    function show(id, result) {
+      const el = document.getElementById(id);
+      el.textContent = JSON.stringify(result, null, 2);
+      el.className = result.data?.ok ? 'ok' : 'err';
+    }
+    async function stats() {
+      const r = await call('/dashboard/stats.php');
+      show('statsOut', r);
+      // Also render into a table if results contain an array
+      if (r.data?.upcoming_anniversaries) {
+        const u = r.data.upcoming_anniversaries;
+        if (u.length) {
+          let html = '<table><tr><th>Code</th><th>Name</th><th>Death</th></tr>';
+          for (const g of u) html += `<tr><td>${g.grave_code}</td><td>${g.full_name}</td><td>${g.death_date}</td></tr>`;
+          html += '</table>';
+          document.getElementById('statsOut').innerHTML += html;
+        }
+      }
+    }
+    async function search() {
+      const body = { query: document.getElementById('q').value, type: document.getElementById('type').value };
+      show('searchOut', await call('/graves/search.php', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+      }));
+    }
+    async function getGrave() {
+      const code = encodeURIComponent(document.getElementById('code').value);
+      show('getOut', await call('/graves/get.php?id=' + code));
+    }
+  </script>
+</body>
+</html>

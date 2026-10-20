@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>RIP System — API Test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 520px; margin: 40px auto; padding: 20px; }
+    input, button { padding: 8px; margin: 4px 0; width: 100%; box-sizing: border-box; font-size: 14px; }
+    button { background: #2a5d34; color: white; border: none; cursor: pointer; }
+    button:hover { background: #1f4426; }
+    pre { background: #f2f2f2; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; }
+    .ok { color: #2a5d34; font-weight: bold; }
+    .err { color: #b02a2a; font-weight: bold; }
+    h3 { margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <h2>RIP System — API Test</h2>
+  <p>Use <code>admin@rip.local</code> / <code>admin123</code> (or your visitor account).</p>
+
+  <h3>Login</h3>
+  <input id="email" type="email" placeholder="email" value="admin@rip.local">
+  <input id="password" type="password" placeholder="password" value="admin123">
+  <button onclick="login()">POST /api/auth/login.php</button>
+  <pre id="loginOut">—</pre>
+
+  <h3>Who am I?</h3>
+  <button onclick="me()">GET /api/auth/me.php</button>
+  <pre id="meOut">—</pre>
+
+  <h3>Logout</h3>
+  <button onclick="logout()">POST /api/auth/logout.php</button>
+  <pre id="logoutOut">—</pre>
+
+  <h3>Register (new account)</h3>
+  <input id="rEmail" type="email" placeholder="email" value="newuser@rip.local">
+  <input id="rPass" type="password" placeholder="password" value="newpass123">
+  <input id="rName" type="text" placeholder="full name" value="New User">
+  <button onclick="register()">POST /api/auth/register.php</button>
+  <pre id="registerOut">—</pre>
+
+  <script>
+    const API = '../api';
+    async function call(path, opts = {}) {
+      const r = await fetch(API + path, { credentials: 'include', ...opts });
+      const data = await r.json().catch(() => ({ ok: false, error: 'bad_json' }));
+      return { status: r.status, data };
+    }
+    function show(elId, result) {
+      const el = document.getElementById(elId);
+      el.textContent = JSON.stringify(result, null, 2);
+      el.className = result.data?.ok ? 'ok' : 'err';
+    }
+    async function login() {
+      const body = {
+        email:    document.getElementById('email').value,
+        password: document.getElementById('password').value,
+      };
+      show('loginOut', await call('/auth/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }));
+    }
+    async function me()       { show('meOut',       await call('/auth/me.php')); }
+    async function logout()   { show('logoutOut',   await call('/auth/logout.php', { method: 'POST' })); }
+    async function register() {
+      const body = {
+        email:     document.getElementById('rEmail').value,
+        password:  document.getElementById('rPass').value,
+        full_name: document.getElementById('rName').value,
+      };
+      show('registerOut', await call('/auth/register.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }));
+    }
+  </script>
+</body>
+</html>

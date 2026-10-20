@@ -176,15 +176,9 @@ async function searchRecords() {
   const type = query === "" ? "name" : (query.includes("RIP-") ? "id" : "name");
   // Simple logic: if it looks like an ID, search ID. Otherwise, search by name.
   
-  // Note: The API requires min 2 chars for name search. If query is empty, we fetch all via ID trick or modify API.
-  // Our API requires at least 2 chars. If empty, we can just fetch a generic "all" or loop. 
-  // To keep it simple, if empty we search by name for " " (space) if the API allows, but ours requires 2 chars.
-  
+  // Our API requires at least 2 chars. If empty, we fetch everything via a wildcard.
   let body = { query: query, type: type };
   if (query === "") {
-    // For initial load, we cheat and fetch everything via a known substring or wildcard
-    // Our API is strict, so let's fetch specifically by location "" which we'll bypass by using the name search with "a"
-    // Better: we modify this to use a special type for "all"
     body = { query: "%%", type: "name" }; 
   }
 
@@ -407,6 +401,56 @@ getElement("uploadCsvBtn").addEventListener("click", async () => {
     showToast("Upload failed.", "error");
   } finally {
     btn.textContent = "Upload CSV";
+    btn.disabled = false;
+  }
+});
+
+// =====================================
+// ADMIN MANUAL ADD GRAVE
+// =====================================
+getElement("openAddGraveBtn").addEventListener("click", () => {
+  getElement("addGraveModal").classList.remove("hidden");
+});
+
+getElement("closeAddGraveModal").addEventListener("click", () => {
+  getElement("addGraveModal").classList.add("hidden");
+});
+
+getElement("addGraveForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = e.target.querySelector("button[type='submit']");
+  btn.textContent = "Saving...";
+  btn.disabled = true;
+
+  const payload = {
+    full_name: getElement("addName").value,
+    cemetery_name: getElement("addCemetery").value,
+    birth_date: getElement("addBirth").value,
+    death_date: getElement("addDeath").value,
+    section: getElement("addSection").value,
+    plot_number: getElement("addPlot").value
+  };
+
+  try {
+    const data = await apiCall("/admin/add_grave.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (data.ok) {
+      showToast("Grave added successfully!", "success");
+      getElement("addGraveForm").reset();
+      getElement("addGraveModal").classList.add("hidden");
+      loadStats(); // Update the top numbers
+      searchRecords(); // Refresh the table
+    } else {
+      showToast(data.error, "error");
+    }
+  } catch (err) {
+    showToast("Failed to add grave.", "error");
+  } finally {
+    btn.textContent = "Save Record";
     btn.disabled = false;
   }
 });

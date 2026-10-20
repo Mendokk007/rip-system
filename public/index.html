@@ -31,8 +31,6 @@
                 Don't have an account?
                 <button type="button" id="showRegister" class="text-btn">Register here</button>
             </p>
-
-            
         </div>
     </section>
 
@@ -110,15 +108,16 @@
                 </article>
             </div>
 
-            <!-- ADMIN CSV UPLOAD (Only visible to admins) -->
+            <!-- ADMIN PANEL (Only visible to admins) -->
             <div id="adminPanel" class="admin-panel hidden">
                 <div>
-                    <h3>Admin: Bulk Data Upload</h3>
-                    <p>Upload a CSV file (Max 10MB) to add graves. Headers must match: <br><code>full_name, birth_date, death_date, cemetery_name, section, plot_number</code></p>
+                    <h3>Admin: Data Management</h3>
+                    <p>Upload a CSV file (Max 10MB) to add graves in bulk. Headers: <br><code>full_name, birth_date, death_date, cemetery_name, section, plot_number</code></p>
                 </div>
-                <div>
+                <div style="text-align: right; min-width: 200px;">
                     <input type="file" id="csvFile" accept=".csv" style="margin-bottom: 8px; min-height: auto;">
-                    <button type="button" id="uploadCsvBtn" class="btn btn-outline full-width">Upload CSV</button>
+                    <button type="button" id="uploadCsvBtn" class="btn btn-outline full-width" style="margin-bottom: 8px;">Upload CSV</button>
+                    <button type="button" id="openAddGraveBtn" class="btn btn-green full-width">+ Add Single Grave</button>
                 </div>
             </div>
 
@@ -227,6 +226,50 @@
                     <button type="button" id="closeModalBottom" class="btn btn-light">Close</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ADD GRAVE MODAL -->
+    <div id="addGraveModal" class="modal hidden">
+        <div class="modal-card" style="max-width: 500px;">
+            <div class="modal-header">
+                <div>
+                    <p class="eyebrow">ADMIN ACTION</p>
+                    <h2>Add New Grave</h2>
+                </div>
+                <button type="button" id="closeAddGraveModal" class="close-btn">&times;</button>
+            </div>
+            <form id="addGraveForm" style="margin-top: 15px;">
+                <label>Full Name</label>
+                <input type="text" id="addName" required placeholder="e.g. Juan Dela Cruz">
+                
+                <label>Cemetery Name</label>
+                <input type="text" id="addCemetery" required placeholder="e.g. Holy Cross Cemetery">
+                
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>Birth Date</label>
+                        <input type="date" id="addBirth">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Death Date</label>
+                        <input type="date" id="addDeath">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>Section</label>
+                        <input type="text" id="addSection" placeholder="e.g. Section A">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Plot Number</label>
+                        <input type="text" id="addPlot" placeholder="e.g. Plot 12">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-green full-width" style="margin-top: 20px;">Save Record</button>
+            </form>
         </div>
     </div>
 

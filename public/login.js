@@ -182,7 +182,6 @@ async function searchRecords() {
   
   // Default to name search if they type something, or show all if empty
   const type = query === "" ? "name" : (query.includes("RIP-") ? "id" : "name");
-  // Simple logic: if it looks like an ID, search ID. Otherwise, search by name.
   
   // Our API requires at least 2 chars. If empty, we fetch everything via a wildcard.
   let body = { query: query, type: type };
@@ -221,7 +220,6 @@ function displayRecords(records) {
   records.forEach((record) => {
     const row = document.createElement("tr");
 
-    // The API returns cemetery, but not area directly. We use cemetery + section.
     const locationStr = `${record.cemetery} / ${record.section || ""}`;
 
     const values = [
@@ -269,6 +267,39 @@ getElement("clearBtn").addEventListener("click", () => {
 });
 
 // =====================================
+// VIEW FAVORITES
+// =====================================
+getElement("viewFavoritesBtn").addEventListener("click", async () => {
+  getElement("searchInput").value = "";
+  
+  try {
+    const data = await apiCall("/favorites/list.php");
+    
+    if (data.ok) {
+      if (data.count === 0) {
+        showToast("You haven't favorited any records yet.", "error");
+        displayRecords([]);
+      } else {
+        showToast(`Showing ${data.count} favorite(s)`, "success");
+        
+        const formattedRecords = data.results.map(r => ({
+          grave_code: r.grave_code,
+          full_name: r.full_name,
+          birth_date: r.birth_date,
+          death_date: r.death_date,
+          cemetery: r.cemetery,
+          section: "", 
+        }));
+        
+        displayRecords(formattedRecords);
+      }
+    }
+  } catch (err) {
+    showToast("Failed to load favorites", "error");
+  }
+});
+
+// =====================================
 // DETAILS MODAL & ACTIONS
 // =====================================
 let currentGraveCode = null;
@@ -284,7 +315,6 @@ async function showDetails(graveCode) {
 
     const record = data.grave;
     
-    // Convert MySQL ENUM to readable text
     let genderStr = "Not available";
     if (record.gender === "M") genderStr = "Male";
     if (record.gender === "F") genderStr = "Female";
@@ -450,8 +480,8 @@ getElement("addGraveForm").addEventListener("submit", async (e) => {
       showToast("Grave added successfully!", "success");
       getElement("addGraveForm").reset();
       getElement("addGraveModal").classList.add("hidden");
-      loadStats(); // Update the top numbers
-      searchRecords(); // Refresh the table
+      loadStats(); 
+      searchRecords(); 
     } else {
       showToast(data.error, "error");
     }

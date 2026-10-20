@@ -89,7 +89,6 @@ getElement("registerForm").addEventListener("submit", async (event) => {
       message.textContent = "Account created! Redirecting to login...";
       message.className = "message success";
       
-      // Pre-fill the email on the login screen for convenience
       getElement("loginEmail").value = email;
 
       setTimeout(() => {
@@ -150,7 +149,6 @@ async function openDashboard(user) {
   setText("todayDate", new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" }));
   setText("currentYear", new Date().getFullYear());
 
-  // Show admin panel if user is admin
   if (user.role === "admin") {
     getElement("adminPanel").classList.remove("hidden");
   } else {
@@ -158,7 +156,7 @@ async function openDashboard(user) {
   }
 
   loadStats();
-  searchRecords(); // Load all records initially
+  searchRecords();
 }
 
 async function loadStats() {
@@ -179,11 +177,8 @@ async function loadStats() {
 // =====================================
 async function searchRecords() {
   const query = getElement("searchInput").value.trim();
-  
-  // Default to name search if they type something, or show all if empty
   const type = query === "" ? "name" : (query.includes("RIP-") ? "id" : "name");
   
-  // Our API requires at least 2 chars. If empty, we fetch everything via a wildcard.
   let body = { query: query, type: type };
   if (query === "") {
     body = { query: "%%", type: "name" }; 
@@ -219,7 +214,6 @@ function displayRecords(records) {
 
   records.forEach((record) => {
     const row = document.createElement("tr");
-
     const locationStr = `${record.cemetery} / ${record.section || ""}`;
 
     const values = [
@@ -257,7 +251,7 @@ getElement("searchBtn").addEventListener("click", searchRecords);
 let searchTimeout;
 getElement("searchInput").addEventListener("input", () => {
   clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(searchRecords, 500); // Debounce
+  searchTimeout = setTimeout(searchRecords, 500);
 });
 
 getElement("clearBtn").addEventListener("click", () => {
@@ -303,6 +297,7 @@ getElement("viewFavoritesBtn").addEventListener("click", async () => {
 // DETAILS MODAL & ACTIONS
 // =====================================
 let currentGraveCode = null;
+let isCurrentlyFavorited = false;
 
 async function showDetails(graveCode) {
   currentGraveCode = graveCode;
@@ -336,9 +331,34 @@ async function showDetails(graveCode) {
     setText("detailKin", record.next_of_kin);
     setText("detailNotes", record.notes);
 
+    // Check if this grave is already favorited to set the button state
+    await checkFavoriteStatus(graveCode);
+
     getElement("detailsModal").classList.remove("hidden");
   } catch (err) {
     showToast("Network error while loading details", "error");
+  }
+}
+
+async function checkFavoriteStatus(graveCode) {
+  const btn = getElement("favBtn");
+  try {
+    const data = await apiCall("/favorites/list.php");
+    if (data.ok) {
+      // Check if currentGraveCode is in the list of favorites
+      const isFav = data.results.some(fav => fav.grave_code === graveCode);
+      isCurrentlyFavorited = isFav;
+      
+      if (isFav) {
+        btn.textContent = "★ Unfavorite";
+        btn.className = "btn btn-outline"; // Change color to outline
+      } else {
+        btn.textContent = "★ Favorite";
+        btn.className = "btn btn-turquoise"; // Standard color
+      }
+    }
+  } catch (err) {
+    console.error("Could not check favorite status");
   }
 }
 
@@ -358,20 +378,37 @@ document.addEventListener("keydown", (event) => {
 
 getElement("printBtn").addEventListener("click", () => window.print());
 
-// Favorite Button
+// Favorite Button Toggle Logic
 getElement("favBtn").addEventListener("click", async () => {
   if (!currentGraveCode) return;
+  const btn = getElement("favBtn");
+  btn.disabled = true; // Prevent double-clicking
+
   try {
     const data = await apiCall("/favorites/toggle.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ grave_code: currentGraveCode })
     });
+    
     if (data.ok) {
-      showToast(data.favorited ? "Added to favorites!" : "Removed from favorites", "success");
+      isCurrentlyFavorited = data.favorited;
+      
+      // Update button text and color based on new state
+      if (isCurrentlyFavorited) {
+        btn.textContent = "★ Unfavorite";
+        btn.className = "btn btn-outline";
+        showToast("Added to favorites!", "success");
+      } else {
+        btn.textContent = "★ Favorite";
+        btn.className = "btn btn-turquoise";
+        showToast("Removed from favorites", "success");
+      }
     }
   } catch (err) {
     showToast("Failed to toggle favorite", "error");
+  } finally {
+    btn.disabled = false;
   }
 });
 
@@ -429,9 +466,9 @@ getElement("uploadCsvBtn").addEventListener("click", async () => {
 
     if (data.ok) {
       showToast(`CSV Uploaded! Inserted: ${data.inserted}, Skipped: ${data.skipped}`, "success");
-      fileInput.value = ""; // Clear input
-      loadStats(); // Refresh stats
-      searchRecords(); // Refresh table
+      fileInput.value = ""; 
+      loadStats(); 
+      searchRecords(); 
     } else {
       showToast(`Error: ${data.error}`, "error");
     }
@@ -500,7 +537,7 @@ getElement("addGraveForm").addEventListener("submit", async (e) => {
   try {
     const data = await apiCall("/auth/me.php");
     if (data.ok) {
-      openDashboard(data.user); // Auto login
+      openDashboard(data.user);
     } else {
       showPage("loginPage");
     }

@@ -86,9 +86,17 @@ getElement("registerForm").addEventListener("submit", async (event) => {
     });
 
     if (data.ok) {
-      message.textContent = "Account created! Logging you in...";
+      message.textContent = "Account created! Redirecting to login...";
       message.className = "message success";
-      setTimeout(() => openDashboard(data.user), 1000);
+      
+      // Pre-fill the email on the login screen for convenience
+      getElement("loginEmail").value = email;
+
+      setTimeout(() => {
+        getElement("registerForm").reset();
+        message.textContent = "";
+        showPage("loginPage");
+      }, 1500);
     } else {
       message.textContent = data.error || "Registration failed.";
       message.className = "message error";

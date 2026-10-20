@@ -112,12 +112,20 @@
             <div id="adminPanel" class="admin-panel hidden">
                 <div>
                     <h3>Admin: Data Management</h3>
-                    <p>Upload a CSV file (Max 10MB) to add graves in bulk. Headers: <br><code>full_name, birth_date, death_date, cemetery_name, section, plot_number</code></p>
+                    <p>Add new records to the database.</p>
                 </div>
-                <div style="text-align: right; min-width: 200px;">
-                    <input type="file" id="csvFile" accept=".csv" style="margin-bottom: 8px; min-height: auto;">
-                    <button type="button" id="uploadCsvBtn" class="btn btn-outline full-width" style="margin-bottom: 8px;">Upload CSV</button>
-                    <button type="button" id="openAddGraveBtn" class="btn btn-green full-width">+ Add Single Grave</button>
+                <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; justify-content: flex-end;">
+                    <!-- Option 1: Manual Entry -->
+                    <button type="button" id="openAddGraveBtn" class="btn btn-green">+ Add Single Grave</button>
+                    
+                    <!-- The "OR" Separator -->
+                    <span style="color: var(--text-muted); font-size: 14px; font-weight: bold; font-style: italic;">or</span>
+                    
+                    <!-- Option 2: CSV Upload -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="file" id="csvFile" accept=".csv" style="min-height: auto; padding: 8px; font-size: 12px; max-width: 220px; background: #fff; border: 1px solid var(--border); border-radius: 8px;">
+                        <button type="button" id="uploadCsvBtn" class="btn btn-outline">Upload CSV</button>
+                    </div>
                 </div>
             </div>
 
